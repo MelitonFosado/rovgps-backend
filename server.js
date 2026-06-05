@@ -46,13 +46,41 @@ app.post('/api/gps', async (req, res) => {
 });
 
 // Ruta para obtener el último dato GPS
+// Coordenadas fijas públicas (Estación Naval Paraíso) - por seguridad
+const UBICACION_PUBLICA = {
+  latitude: 21.425419,
+  longitude: -89.566827
+};
+
+// Clave secreta para acceso a datos reales (cámbiala por la que quieras)
+const CLAVE_SECRETA = 'rovgps2026secreto';
+
+// Ruta PÚBLICA: siempre devuelve la ubicación fija (Estación Naval)
 app.get('/api/gps/latest', async (req, res) => {
   try {
-    const query = `
-      SELECT * FROM gps_data 
-      ORDER BY created_at DESC 
-      LIMIT 1;
-    `;
+    const query = `SELECT * FROM gps_data ORDER BY created_at DESC LIMIT 1;`;
+    const result = await pool.query(query);
+    const real = result.rows[0] || {};
+
+    // Devolvemos los datos pero con la ubicación FIJA por seguridad
+    res.json({
+      ...real,
+      latitude: UBICACION_PUBLICA.latitude,
+      longitude: UBICACION_PUBLICA.longitude
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ruta PRIVADA: devuelve la ubicación REAL (solo con clave secreta)
+app.get('/api/gps/real', async (req, res) => {
+  try {
+    if (req.query.clave !== CLAVE_SECRETA) {
+      return res.status(401).json({ error: 'No autorizado' });
+    }
+    const query = `SELECT * FROM gps_data ORDER BY created_at DESC LIMIT 1;`;
     const result = await pool.query(query);
     res.json(result.rows[0] || {});
   } catch (error) {
