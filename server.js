@@ -48,8 +48,10 @@ app.post('/api/gps', async (req, res) => {
 // Ruta para obtener el último dato GPS
 // Coordenadas fijas públicas (Estación Naval Paraíso) - por seguridad
 const UBICACION_PUBLICA = {
-  latitude: 21.425419,
-  longitude: -89.566827
+  latitude: 21.287931,
+  longitude: -89.684630
+
+
 };
 
 // Clave secreta para acceso a datos reales (cámbiala por la que quieras)
